@@ -1,4 +1,4 @@
-import { Configuration } from 'openai';
+import OpenAI from 'openai';
 import { Anthropic } from '@anthropic-ai/sdk';
 import { serviceConfig } from '../../config/service-integration.js';
 
@@ -12,15 +12,15 @@ export const AI_AGENTS = {
 };
 
 export class EnhancedAIService {
-  private openai;
-  private anthropic;
-  private mistral;
-  private gemini;
-  private perplexity;
+  private openai: OpenAI | undefined;
+  private anthropic: Anthropic | undefined;
+  private mistral: any;
+  private gemini: any;
+  private perplexity: any;
 
   constructor() {
     // Initialize AI providers
-    this.openai = new Configuration({
+    this.openai = new OpenAI({
       apiKey: serviceConfig.ai.openai.apiKey,
       organization: serviceConfig.ai.openai.orgId
     });
@@ -125,6 +125,45 @@ export class EnhancedAIService {
   private async attemptRecovery(error: any) {
     // Implement error recovery logic
     // Implementation...
+  }
+
+  // Placeholder methods for other AI providers
+  private async processWithOpenAI(request: any, config: any): Promise<any> {
+    if (!this.openai) throw new Error('OpenAI not initialized');
+    // Implementation for OpenAI
+    return {};
+  }
+
+  private async processWithAnthropic(request: any, config: any): Promise<any> {
+    if (!this.anthropic) throw new Error('Anthropic not initialized');
+    // Implementation for Anthropic
+    return {};
+  }
+
+  private async processWithMistral(request: any, config: any): Promise<any> {
+    // Implementation for Mistral AI
+    return {};
+  }
+
+  private async processWithGemini(request: any, config: any): Promise<any> {
+    // Implementation for Google Gemini
+    return {};
+  }
+
+  private async processWithPerplexity(request: any, config: any): Promise<any> {
+    // Implementation for Perplexity AI
+    return {};
+  }
+
+  private async processWithDHAContext(request: any): Promise<any> {
+    // Implementation for DHA context processing
+    return {};
+  }
+
+  private combineResults(results: any[]): any {
+    // Combine results from multiple AI providers
+    // Implementation...
+    return {};
   }
 }
 

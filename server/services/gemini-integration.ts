@@ -2,7 +2,7 @@
 // Referenced from blueprint:javascript_gemini
 
 import * as fs from "fs";
-import { GoogleGenAI, Modality } from "@google/genai";
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // The newest Gemini model series is "gemini-2.5-flash" or "gemini-2.5-pro"
 const getGeminiApiKey = () => {
@@ -15,17 +15,17 @@ const getGeminiApiKey = () => {
               process.env.GOOGLE_CLOUD_API_KEY ||
               process.env.GCLOUD_API_KEY ||
               "";
-  
+
   if (key) {
     console.log('[Gemini] ✅ API key found and configured');
   } else {
     console.warn('[Gemini] ⚠️ API key not found - service will be inactive');
   }
-  
+
   return key;
 };
 
-const ai = new GoogleGenAI({ apiKey: getGeminiApiKey() });
+const ai = new GoogleGenerativeAI({ apiKey: getGeminiApiKey() });
 
 export interface GeminiAnalysis {
   content: string;
@@ -80,8 +80,8 @@ export class GeminiService {
 
     try {
       const systemPrompt = `You are Ra'is al Khadir, analyzing sentiment for Queen Raeesa's DHA system. 
-Analyze the sentiment and provide a rating from 1 to 5 stars and confidence score between 0 and 1.
-Respond with JSON in this format: {'rating': number, 'confidence': number}`;
+      Analyze the sentiment and provide a rating from 1 to 5 stars and confidence score between 0 and 1.
+      Respond with JSON in this format: {'rating': number, 'confidence': number}`;
 
       const response = await ai.models.generateContent({
         model: "gemini-2.5-pro",
@@ -149,7 +149,7 @@ Respond with JSON in this format: {'rating': number, 'confidence': number}`;
       });
 
       const analysisText = response.text || "";
-      
+
       // Extract JSON from response if present
       const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
@@ -198,7 +198,7 @@ Respond with JSON in this format: {'rating': number, 'confidence': number}`;
       2. Identify key facial landmarks
       3. Assess potential spoofing or fraud
       4. Provide recommendations for biometric enrollment
-      
+
       Return JSON with: faceDetected, quality (0-100), landmarks, spoofingDetected, recommendation`,
     ];
 
@@ -209,7 +209,7 @@ Respond with JSON in this format: {'rating': number, 'confidence': number}`;
       });
 
       const analysisText = response.text || "";
-      
+
       // Extract JSON from response if present
       const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
@@ -230,7 +230,7 @@ Respond with JSON in this format: {'rating': number, 'confidence': number}`;
       // Fallback analysis
       const faceDetected = analysisText.toLowerCase().includes('face');
       const highQuality = analysisText.toLowerCase().includes('high quality') || analysisText.toLowerCase().includes('clear');
-      
+
       return {
         faceDetected,
         quality: faceDetected ? (highQuality ? 85 : 60) : 0,

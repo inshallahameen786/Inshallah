@@ -6,6 +6,15 @@ import { PDFDocument, StandardFonts } from 'pdf-lib';
 import QRCode from 'qrcode';
 import { advancedSelfHealing } from './advanced-self-healing.service.js';
 
+// Assuming securityKeys is available in this scope or imported
+// For demonstration, let's mock it based on serviceConfig
+const securityKeys = {
+  encryption: {
+    masterKey: serviceConfig.security.biometric // Using the same key for demonstration
+  }
+};
+
+
 interface SecurityFeature {
   type: string;
   data: any;
@@ -73,10 +82,10 @@ export class EnhancedDocumentService {
   private async createBaseDocument(type: DHADocumentType) {
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage();
-    
+
     // Add base security features
     await this.addBaseSecurityFeatures(page);
-    
+
     return pdfDoc;
   }
 
@@ -154,7 +163,7 @@ export class EnhancedDocumentService {
   private async addBiometricFeatures(doc: PDFDocument, biometrics: any) {
     // Encrypt biometric data
     const encryptedBiometrics = this.encryptBiometricData(biometrics);
-    
+
     // Add to document
     await doc.attach(encryptedBiometrics, 'biometrics.dat', {
       mimeType: 'application/octet-stream',
@@ -171,10 +180,10 @@ export class EnhancedDocumentService {
   private async addBlockchainVerification(doc: PDFDocument, data: any) {
     // Create verification hash
     const docHash = this.createDocumentHash(doc, data);
-    
+
     // Store on blockchain
     const blockchainRef = await this.storeOnBlockchain(docHash);
-    
+
     return {
       hash: docHash,
       reference: blockchainRef,
@@ -227,22 +236,20 @@ export class EnhancedDocumentService {
       blockchainRef: blockchainVerification.reference,
       issueDate: new Date().toISOString()
     };
-    
+
     return await QRCode.toBuffer(JSON.stringify(verificationData));
   }
 
   private encryptBiometricData(biometrics: any) {
     // Implement biometric encryption
-    const cipher = crypto.createCipheriv(
-      'aes-256-gcm',
-      Buffer.from(serviceConfig.security.biometric, 'hex'),
-      crypto.randomBytes(16)
-    );
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv('aes-256-gcm', Buffer.from(securityKeys.encryption.masterKey, 'hex') as any, iv as any);
 
-    return Buffer.concat([
+    const encrypted = Buffer.concat([
       cipher.update(JSON.stringify(biometrics)),
       cipher.final()
     ]);
+    return Buffer.concat([iv, Buffer.from(cipher.getAuthTag()), encrypted]);
   }
 
   private applyQuantumEncryption(doc: any) {

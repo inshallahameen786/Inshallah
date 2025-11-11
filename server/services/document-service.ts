@@ -8,7 +8,7 @@ import crypto from 'crypto'
 export class DocumentService {
   private security = initializeDocumentSecurity()
   private govServices = initializeGovernmentServices()
-  
+
   // Generate secure document with all required features
   async generateSecureDocument(data: any, documentType: string) {
     // Validate with DHA NPR
@@ -24,7 +24,7 @@ export class DocumentService {
 
     // Add security features
     const securityFeatures = await this.addSecurityFeatures(data)
-    
+
     // Add biometric data if available
     if (data.biometrics) {
       await this.addBiometricData(pdfDoc, data.biometrics)
@@ -32,7 +32,7 @@ export class DocumentService {
 
     // Generate QR code with verification data
     const qrCode = await this.generateVerificationQR(data)
-    
+
     // Add document content
     page.drawText('REPUBLIC OF SOUTH AFRICA', {
       x: 50,
@@ -43,13 +43,13 @@ export class DocumentService {
 
     // Add document specific content
     await this.addDocumentContent(page, data, documentType)
-    
+
     // Add security watermark
     await this.addSecurityWatermark(page)
-    
+
     // Add digital signature
     const signature = this.security.sign(JSON.stringify(data))
-    
+
     // Final security wrapper
     const finalDoc = await this.wrapWithSecurity({
       pdf: await pdfDoc.save(),
@@ -120,7 +120,7 @@ export class DocumentService {
         .update(JSON.stringify(data))
         .digest('hex')
     }
-    
+
     return await QRCode.toBuffer(JSON.stringify(verificationData))
   }
 
@@ -130,7 +130,7 @@ export class DocumentService {
       serviceConfig.documents.pki.privateKey,
       Buffer.from(JSON.stringify(biometrics))
     )
-    
+
     const attachment = await doc.attach(
       encryptedBiometrics,
       'biometrics.dat',
@@ -174,7 +174,7 @@ export class DocumentService {
     // Encrypt the whole package
     const encryptionKey = crypto.randomBytes(32)
     const iv = crypto.randomBytes(16)
-    
+
     const cipher = crypto.createCipheriv(
       'aes-256-gcm',
       encryptionKey,
@@ -211,17 +211,17 @@ export class DocumentService {
         encryptedDoc.iv
       )
 
-      const decrypted = JSON.parse(
-        Buffer.concat([
-          decipher.update(encryptedDoc.package),
-          decipher.final()
-        ]).toString()
-      )
+      const decrypted = Buffer.concat([
+        decipher.update(encryptedDoc.package),
+        decipher.final()
+      ]).toString()
+
+      const parsedDecrypted = JSON.parse(decrypted)
 
       // Verify signature
       const isValid = this.security.verify(
-        JSON.stringify(decrypted.document),
-        decrypted.signature
+        JSON.stringify(parsedDecrypted.document),
+        parsedDecrypted.signature
       )
 
       if (!isValid) {
@@ -230,8 +230,8 @@ export class DocumentService {
 
       return {
         verified: true,
-        document: decrypted.document,
-        metadata: decrypted.metadata
+        document: parsedDecrypted.document,
+        metadata: parsedDecrypted.metadata
       }
 
     } catch (error) {

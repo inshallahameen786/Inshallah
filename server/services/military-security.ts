@@ -85,10 +85,10 @@ export class MilitarySecurityService {
 
   private initializeMilitarySecurity(): void {
     console.log('[Military Security] Initializing military-grade security protocols');
-    
+
     // Initialize key wrapping key for HSM
     this.keyWrappingKey = randomBytes(32);
-    
+
     // Start security monitoring
     setInterval(() => this.performSecurityAudit(), 60000); // Every minute
     setInterval(() => this.checkTEMPESTCompliance(), 300000); // Every 5 minutes
@@ -98,15 +98,15 @@ export class MilitarySecurityService {
   private initializeHSM(): void {
     // Simulate HSM initialization
     console.log('[HSM] Initializing Hardware Security Module');
-    
+
     // Generate master keys
     const masterKey = randomBytes(32);
     const backupKey = randomBytes(32);
-    
+
     // Store in secure enclave
     this.secureEnclave.set('MASTER_KEY', this.wrapKey(masterKey));
     this.secureEnclave.set('BACKUP_KEY', this.wrapKey(backupKey));
-    
+
     // Initialize key slots
     for (let i = 0; i < 10; i++) {
       const slotKey = randomBytes(32);
@@ -116,19 +116,19 @@ export class MilitarySecurityService {
 
   private initializeQuantumResistance(): void {
     console.log('[PQC] Initializing post-quantum cryptography');
-    
+
     // Initialize quantum-resistant key pairs
     // In production, use actual PQC libraries like liboqs
     const kyberKeyPair = this.generatePQCKeyPair('KYBER');
     const dilithiumKeyPair = this.generatePQCKeyPair('DILITHIUM');
-    
+
     this.secureEnclave.set('PQC_KYBER', kyberKeyPair);
     this.secureEnclave.set('PQC_DILITHIUM', dilithiumKeyPair);
   }
 
   private initializeTEMPEST(): void {
     console.log('[TEMPEST] Initializing emanation security protocols');
-    
+
     // Initialize TEMPEST monitoring
     this.secureEnclave.set('TEMPEST_CONFIG', {
       ...this.TEMPEST,
@@ -151,12 +151,12 @@ export class MilitarySecurityService {
     const keyId = `SUITE_B_${Date.now()}`;
     const key = randomBytes(32);
     const iv = randomBytes(16);
-    
+
     // Store key in HSM
     this.hsmKeys.set(keyId, this.wrapKey(key));
-    
-    const cipher = createCipheriv(this.SUITE_B.AES_256_GCM, key, iv);
-    
+
+    const cipher = createCipheriv(this.SUITE_B.AES_256_GCM, key as any, iv as any);
+
     // Add classification as additional authenticated data
     const aad = Buffer.from(JSON.stringify({
       classification,
@@ -164,12 +164,12 @@ export class MilitarySecurityService {
       algorithm: 'AES-256-GCM'
     }));
     (cipher as any).setAAD(aad);
-    
+
     let encrypted = cipher.update(data, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    
+
     const tag = (cipher as any).getAuthTag();
-    
+
     return {
       ciphertext: encrypted,
       iv: iv.toString('hex'),
@@ -190,17 +190,17 @@ export class MilitarySecurityService {
     if (!wrappedKey) {
       throw new Error('Key not found in HSM');
     }
-    
+
     const key = this.unwrapKey(wrappedKey);
     const iv = Buffer.from(encryptedData.iv, 'hex');
     const tag = Buffer.from(encryptedData.tag, 'hex');
-    
-    const decipher = createDecipheriv(this.SUITE_B.AES_256_GCM, key, iv);
+
+    const decipher = createDecipheriv(this.SUITE_B.AES_256_GCM, key as any, iv as any);
     (decipher as any).setAuthTag(tag);
-    
+
     let decrypted = decipher.update(encryptedData.ciphertext, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
-    
+
     return decrypted;
   }
 
@@ -215,18 +215,18 @@ export class MilitarySecurityService {
     // In production, use actual PQC libraries
     // This is a simulation using classical cryptography
     const keyPair = this.secureEnclave.get('PQC_KYBER');
-    
+
     // Simulate key encapsulation mechanism (KEM)
     const sharedSecret = randomBytes(32);
     const encapsulatedKey = publicEncrypt(keyPair.publicKey, sharedSecret);
-    
+
     // Use shared secret for symmetric encryption
     const iv = randomBytes(16);
     const cipher = createCipheriv('aes-256-cbc', sharedSecret, iv);
-    
+
     let encrypted = cipher.update(data, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    
+
     return {
       ciphertext: iv.toString('hex') + encrypted,
       encapsulatedKey: encapsulatedKey.toString('hex'),
@@ -248,23 +248,23 @@ export class MilitarySecurityService {
       if (!this.validateCACPin(pin)) {
         return { authenticated: false };
       }
-      
+
       // Parse and validate certificate
       const certData = this.parseCACCertificate(certificate);
-      
+
       // Check certificate chain
       if (!await this.validateCertificateChain(certData)) {
         return { authenticated: false };
       }
-      
+
       // Check revocation status
       if (!await this.checkRevocationStatus(certData)) {
         return { authenticated: false };
       }
-      
+
       // Extract user information
       const userInfo = this.extractCACUserInfo(certData);
-      
+
       // Create session
       const sessionId = randomBytes(32).toString('hex');
       this.cacSessions.set(sessionId, {
@@ -273,7 +273,7 @@ export class MilitarySecurityService {
         permissions: userInfo.permissions,
         timestamp: Date.now()
       });
-      
+
       return {
         authenticated: true,
         ...userInfo
@@ -289,20 +289,20 @@ export class MilitarySecurityService {
    */
   public secureDelete(data: Buffer | string): void {
     const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
-    
+
     // Perform multiple overwrite passes
     for (let pass = 0; pass < this.DOD_SANITIZATION.OVERWRITE_PASSES; pass++) {
       const pattern = this.DOD_SANITIZATION.PATTERNS[pass];
-      
+
       // Overwrite memory
       for (let i = 0; i < buffer.length; i++) {
         buffer[i] = pattern[0];
       }
-      
+
       // Force memory write
       if (global.gc) global.gc();
     }
-    
+
     // Verify deletion
     const verification = createHash('sha256').update(buffer).digest();
     if (verification.some(byte => byte !== 0)) {
@@ -320,43 +320,43 @@ export class MilitarySecurityService {
   } {
     const violations: string[] = [];
     const recommendations: string[] = [];
-    
+
     const config = this.secureEnclave.get('TEMPEST_CONFIG');
-    
+
     // Check RED/BLACK separation
     if (!config.RED_BLACK_SEPARATION) {
       violations.push('RED/BLACK network separation not enforced');
       recommendations.push('Implement physical network segmentation');
     }
-    
+
     // Check shielding level
     if (config.SHIELDING_LEVEL !== 'ZONE_3') {
       violations.push('Insufficient electromagnetic shielding');
       recommendations.push('Upgrade to NATO SDIP-27 Level B shielding');
     }
-    
+
     // Check emanation limits
     if (config.EMANATION_LIMIT > -50) {
       violations.push('Electromagnetic emanations exceed limits');
       recommendations.push('Install additional RF shielding');
     }
-    
+
     // Check acoustic masking
     if (!config.ACOUSTIC_MASKING) {
       violations.push('Acoustic emanation protection not active');
       recommendations.push('Enable white noise generators');
     }
-    
+
     // Check power line filtering
     if (!config.POWER_LINE_FILTERING) {
       violations.push('Power line filtering not installed');
       recommendations.push('Install TEMPEST-rated power filters');
     }
-    
+
     // Update last check
     config.lastCheck = Date.now();
     this.secureEnclave.set('TEMPEST_CONFIG', config);
-    
+
     return {
       compliant: violations.length === 0,
       violations,
@@ -385,7 +385,7 @@ export class MilitarySecurityService {
         passphrase: randomBytes(32).toString('hex')
       }
     });
-    
+
     return {
       publicKey,
       privateKey,
@@ -400,7 +400,7 @@ export class MilitarySecurityService {
     const sign = createSign(this.SUITE_B.SHA_384);
     sign.update(data);
     sign.end();
-    
+
     return sign.sign(privateKey, 'hex');
   }
 
@@ -409,7 +409,7 @@ export class MilitarySecurityService {
       const verify = createVerify(this.SUITE_B.SHA_384);
       verify.update(data);
       verify.end();
-      
+
       return verify.verify(publicKey, signature, 'hex');
     } catch (error) {
       console.error('[Signature Verification] Failed:', error);
@@ -422,7 +422,7 @@ export class MilitarySecurityService {
    */
   public enableAirGappedMode(): void {
     console.log('[Air Gap] Enabling air-gapped operation mode');
-    
+
     // Disable all network interfaces (simulated)
     this.secureEnclave.set('AIR_GAPPED', {
       enabled: true,
@@ -438,21 +438,21 @@ export class MilitarySecurityService {
     const expectedCode = createHash('sha512')
       .update(process.env.AIR_GAP_AUTH || 'default')
       .digest('hex');
-    
+
     const providedCode = createHash('sha512')
       .update(authorizationCode)
       .digest('hex');
-    
+
     if (providedCode !== expectedCode) {
       console.error('[Air Gap] Invalid authorization code');
       return false;
     }
-    
+
     this.secureEnclave.set('AIR_GAPPED', {
       enabled: false,
       timestamp: Date.now()
     });
-    
+
     return true;
   }
 
@@ -498,17 +498,17 @@ export class MilitarySecurityService {
     try {
       // Parse certificate (simplified - use node-forge or similar in production)
       const certData = this.parseCertificate(certificate);
-      
+
       // Validate certificate chain
       const chainValid = await this.validateCertificateChain(certData);
-      
+
       // Check revocation status
       const notRevoked = await this.checkRevocationStatus(certData);
-      
+
       // Check validity period
       const now = new Date();
       const validPeriod = certData.validFrom <= now && certData.validTo >= now;
-      
+
       return {
         valid: chainValid && notRevoked && validPeriod,
         ...certData
@@ -525,22 +525,22 @@ export class MilitarySecurityService {
   private wrapKey(key: Buffer): Buffer {
     const iv = randomBytes(16);
     const cipher = createCipheriv('aes-256-cbc', this.keyWrappingKey, iv);
-    
+
     let wrapped = cipher.update(key);
     wrapped = Buffer.concat([wrapped, cipher.final()]);
-    
+
     return Buffer.concat([iv, wrapped]);
   }
 
   private unwrapKey(wrappedKey: Buffer): Buffer {
     const iv = wrappedKey.slice(0, 16);
     const encrypted = wrappedKey.slice(16);
-    
+
     const decipher = createDecipheriv('aes-256-cbc', this.keyWrappingKey, iv);
-    
+
     let unwrapped = decipher.update(encrypted);
     unwrapped = Buffer.concat([unwrapped, decipher.final()]);
-    
+
     return unwrapped;
   }
 
@@ -616,7 +616,7 @@ export class MilitarySecurityService {
 
   private getDisseminationControls(level: keyof typeof this.CLASSIFICATION | string): string[] {
     const controls: string[] = [];
-    
+
     switch (level) {
       case 'TOP_SECRET_SCI':
         controls.push('NOFORN', 'ORCON', 'IMM');
@@ -633,14 +633,14 @@ export class MilitarySecurityService {
       default:
         controls.push('UNCLASSIFIED');
     }
-    
+
     return controls;
   }
 
   private getDeclassificationDate(level: keyof typeof this.CLASSIFICATION | string): string {
     const now = new Date();
     let years = 10; // Default declassification period
-    
+
     switch (level) {
       case 'TOP_SECRET_SCI':
       case 'SAP':
@@ -656,7 +656,7 @@ export class MilitarySecurityService {
         years = 6;
         break;
     }
-    
+
     now.setFullYear(now.getFullYear() + years);
     return now.toISOString();
   }
@@ -670,7 +670,7 @@ export class MilitarySecurityService {
       classifiedDataItems: this.classifiedData.size,
       tempestCompliant: this.checkTEMPESTCompliance().compliant
     };
-    
+
     console.log('[Security Audit]', audit);
   }
 
@@ -718,16 +718,16 @@ export class MilitarySecurityService {
     if (!key) {
       throw new Error(`HSM key ${keyId} not found`);
     }
-    
+
     // Create signature using HSM key (unwrap first)
     const unwrappedKey = this.unwrapKey(key);
     const signature = createHmac('sha512', unwrappedKey)
       .update(data)
       .digest('hex');
-    
+
     // Log HSM operation
     console.log(`[HSM] Signed data with key ${keyId}`);
-    
+
     return signature;
   }
 }

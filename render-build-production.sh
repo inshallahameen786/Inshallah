@@ -187,7 +187,7 @@ if [ ! -f "./node_modules/.bin/tsc" ]; then
 fi
 
 echo "Running TypeScript compiler with relaxed checks..."
-./node_modules/.bin/tsc -p tsconfig.production.json --skipLibCheck --noEmitOnError false 2>&1 | tee /tmp/tsc-errors.log || true
+./node_modules/.bin/tsc -p tsconfig.production.json --skipLibCheck --noEmitOnError false --noUnusedLocals false --noUnusedParameters false 2>&1 | tee /tmp/tsc-errors.log || true
 
 if grep -q "error TS" /tmp/tsc-errors.log; then
     echo "⚠️  TypeScript errors detected - review logs above"

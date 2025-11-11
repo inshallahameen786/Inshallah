@@ -31,16 +31,16 @@ export const AUTHENTIC_SA_DESIGN = {
     asylum_orange: "#FF9500",
     asylum_beige: "#FFF4E6",
     asylum_red_stamp: "#CC0000",
-    
+
     // Birth certificate authentic colors
     birth_green: "#006633",
     birth_gold_border: "#FFD700",
     birth_watermark: "#E8F5E8",
-    
+
     // Citizenship certificate colors
     citizenship_navy: "#003366", 
     citizenship_eagle_gold: "#B8860B",
-    
+
     // Passport authentic colors
     passport_sa_green: "#007748",
     passport_gold: "#FFC72C",
@@ -70,7 +70,7 @@ export class EnhancedAsylumSeekerPermitGenerator extends BaseDocumentTemplate {
         const chunks: Buffer[] = [];
         doc.on('data', (chunk) => chunks.push(chunk));
         doc.on('error', reject);
-        doc.on('end', () => resolve(Buffer.concat(chunks)));
+        doc.on('end', () => resolve(Buffer.concat(chunks as any)));
 
         // Authentic DHA background (orange/beige theme from template)
         doc.save();
@@ -101,7 +101,7 @@ export class EnhancedAsylumSeekerPermitGenerator extends BaseDocumentTemplate {
            .font('Helvetica-Bold')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.white)
            .text("DEPARTMENT OF HOME AFFAIRS", 100, 25);
-           
+
         doc.fontSize(12)
            .text("REPUBLIC OF SOUTH AFRICA", 100, 45);
 
@@ -118,7 +118,7 @@ export class EnhancedAsylumSeekerPermitGenerator extends BaseDocumentTemplate {
            .font('Helvetica-Bold')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.black)
            .text("A. PERSONAL PARTICULARS OF HOLDER", 50, yPos);
-           
+
         yPos += 30;
 
         // Draw main content box (authentic layout)
@@ -157,7 +157,7 @@ export class EnhancedAsylumSeekerPermitGenerator extends BaseDocumentTemplate {
            .strokeColor(AUTHENTIC_SA_DESIGN.colors.black)
            .lineWidth(2)
            .stroke();
-        
+
         doc.fontSize(10)
            .fillColor(AUTHENTIC_SA_DESIGN.colors.security_blue)
            .text("PHOTOGRAPH", 440, 230, { width: 50, align: "center" });
@@ -169,7 +169,7 @@ export class EnhancedAsylumSeekerPermitGenerator extends BaseDocumentTemplate {
            .font('Helvetica-Bold')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.black)
            .text("B. CONDITIONS", 60, yPos);
-           
+
         yPos += 25;
 
         const conditions = [
@@ -201,7 +201,7 @@ export class EnhancedAsylumSeekerPermitGenerator extends BaseDocumentTemplate {
 
         // Security features
         yPos = 600;
-        
+
         // QR Code
         const qrCode = await this.generateQRCode({ 
           ...data, 
@@ -233,7 +233,7 @@ export class EnhancedAsylumSeekerPermitGenerator extends BaseDocumentTemplate {
        .font('Helvetica')
        .fillColor(AUTHENTIC_SA_DESIGN.colors.security_blue)
        .text(label, x, y);
-       
+
     doc.fontSize(11)
        .font('Helvetica-Bold')
        .fillColor(AUTHENTIC_SA_DESIGN.colors.black)
@@ -263,7 +263,7 @@ export class EnhancedUnabridgedBirthCertificateGenerator extends BaseDocumentTem
         const chunks: Buffer[] = [];
         doc.on('data', (chunk) => chunks.push(chunk));
         doc.on('error', reject);
-        doc.on('end', () => resolve(Buffer.concat(chunks)));
+        doc.on('end', () => resolve(Buffer.concat(chunks as any)));
 
         // Authentic watermark background
         doc.save();
@@ -273,7 +273,7 @@ export class EnhancedUnabridgedBirthCertificateGenerator extends BaseDocumentTem
 
         // Header with coat of arms (authentic positioning)
         let yPos = 40;
-        
+
         // SA Coat of Arms (centered, authentic size)
         doc.save();
         doc.rect(267, yPos, 60, 60)
@@ -285,7 +285,7 @@ export class EnhancedUnabridgedBirthCertificateGenerator extends BaseDocumentTem
            .fillColor(AUTHENTIC_SA_DESIGN.colors.birth_green)
            .text("COAT OF\nARMS", 282, yPos + 25, { width: 30, align: "center" });
         doc.restore();
-        
+
         yPos += 80;
 
         // Government headers (authentic layout)
@@ -293,12 +293,12 @@ export class EnhancedUnabridgedBirthCertificateGenerator extends BaseDocumentTem
            .font('Helvetica-Bold')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.black)
            .text("REPUBLIC OF SOUTH AFRICA", 50, yPos, { align: "center", width: 495 });
-           
+
         yPos += 25;
         doc.fontSize(12)
            .fillColor(AUTHENTIC_SA_DESIGN.colors.birth_green)
            .text("DEPARTMENT OF HOME AFFAIRS", 50, yPos, { align: "center", width: 495 });
-           
+
         yPos += 30;
 
         // Document number (top right, authentic positioning)
@@ -311,11 +311,11 @@ export class EnhancedUnabridgedBirthCertificateGenerator extends BaseDocumentTem
            .font('Helvetica-Bold')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.birth_green)
            .text("UNABRIDGED", 50, yPos, { align: "center", width: 495 });
-           
+
         yPos += 25;
         doc.fontSize(16)
            .text("BIRTH CERTIFICATE", 50, yPos, { align: "center", width: 495 });
-           
+
         yPos += 40;
 
         // Particulars from the population register header
@@ -323,7 +323,7 @@ export class EnhancedUnabridgedBirthCertificateGenerator extends BaseDocumentTem
            .font('Helvetica')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.security_blue)
            .text("PARTICULARS FROM THE POPULATION REGISTER I.R.O.:", 50, yPos);
-           
+
         yPos += 30;
 
         // Main content border (authentic design)
@@ -341,7 +341,7 @@ export class EnhancedUnabridgedBirthCertificateGenerator extends BaseDocumentTem
            .font('Helvetica-Bold')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.black)
            .text("CHILD", 60, yPos);
-           
+
         yPos += 25;
 
         this.addBirthField(doc, "IDENTITY NUMBER:", "To be allocated", 60, yPos);
@@ -367,7 +367,7 @@ export class EnhancedUnabridgedBirthCertificateGenerator extends BaseDocumentTem
            .font('Helvetica-Bold')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.black)
            .text("MOTHER", 60, yPos);
-           
+
         yPos += 25;
         this.addBirthField(doc, "IDENTITY NUMBER/TRAVEL DOC:", "_______________", 60, yPos);
         yPos += 25;
@@ -390,7 +390,7 @@ export class EnhancedUnabridgedBirthCertificateGenerator extends BaseDocumentTem
            .font('Helvetica-Bold')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.black)
            .text("FATHER", 60, yPos);
-           
+
         yPos += 25;
         this.addBirthField(doc, "IDENTITY NUMBER/TRAVEL DOC:", "_______________", 60, yPos);
         yPos += 25;
@@ -409,7 +409,7 @@ export class EnhancedUnabridgedBirthCertificateGenerator extends BaseDocumentTem
 
         // Bottom section with stamps and signatures
         yPos = 620;
-        
+
         // Official stamp area (left side)
         doc.save();
         doc.rect(60, yPos, 120, 80)
@@ -463,7 +463,7 @@ export class EnhancedUnabridgedBirthCertificateGenerator extends BaseDocumentTem
        .font('Helvetica')
        .fillColor(AUTHENTIC_SA_DESIGN.colors.black)
        .text(label, x, y, { width: 200 });
-       
+
     doc.fontSize(10)
        .font('Helvetica-Bold')
        .text(value || "____________________", x + 200, y);
@@ -492,7 +492,7 @@ export class EnhancedCitizenshipCertificateGenerator extends BaseDocumentTemplat
         const chunks: Buffer[] = [];
         doc.on('data', (chunk) => chunks.push(chunk));
         doc.on('error', reject);
-        doc.on('end', () => resolve(Buffer.concat(chunks)));
+        doc.on('end', () => resolve(Buffer.concat(chunks as any)));
 
         // Certificate number (top right)
         doc.fontSize(12)
@@ -513,7 +513,7 @@ export class EnhancedCitizenshipCertificateGenerator extends BaseDocumentTemplat
            .fillColor(AUTHENTIC_SA_DESIGN.colors.citizenship_eagle_gold)
            .text("SA EAGLE\nEMBLEM", 282, yPos + 25, { width: 30, align: "center" });
         doc.restore();
-        
+
         yPos += 80;
 
         // Elegant government headers (authentic typography)
@@ -521,13 +521,13 @@ export class EnhancedCitizenshipCertificateGenerator extends BaseDocumentTemplat
            .font('Times-Italic')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.black)
            .text("Republic of South Africa", 50, yPos, { align: "center", width: 495 });
-           
+
         yPos += 30;
         doc.fontSize(14)
            .font('Helvetica-Bold')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.citizenship_navy)
            .text("Department of Home Affairs", 50, yPos, { align: "center", width: 495 });
-           
+
         yPos += 50;
 
         // Main title (authentic design)
@@ -535,7 +535,7 @@ export class EnhancedCitizenshipCertificateGenerator extends BaseDocumentTemplat
            .font('Times-Bold')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.black)
            .text("Certificate of South African Citizenship", 50, yPos, { align: "center", width: 495 });
-           
+
         yPos += 30;
 
         // Legal reference (authentic positioning)
@@ -543,27 +543,27 @@ export class EnhancedCitizenshipCertificateGenerator extends BaseDocumentTemplat
            .font('Helvetica')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.security_blue)
            .text("(Section 10, South African Citizenship Act 1995)", 50, yPos, { align: "center", width: 495 });
-           
+
         yPos += 50;
 
         // Certificate text (authentic legal language)
         const purposeText = data.certificateText?.purposeStatement || 
           "This certificate is issued for the sole purpose of indicating the status of the person concerned on the date of issue.";
-        
+
         doc.fontSize(10)
            .font('Helvetica')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.black)
            .text(purposeText, 50, yPos, { width: 495, align: "justify" });
-           
+
         yPos += 40;
 
         // Certification statement (authentic wording)
         const certificationText = `It is hereby certified that ${data.holder.fullName} concerning whose particulars are set out below, is a South African citizen by ${data.certificateText?.citizenshipType || 'birth/descent/naturalisation'}.`;
-        
+
         doc.fontSize(10)
            .font('Helvetica')
            .text(certificationText, 50, yPos, { width: 495, align: "justify" });
-           
+
         yPos += 50;
 
         // Particulars section header
@@ -571,7 +571,7 @@ export class EnhancedCitizenshipCertificateGenerator extends BaseDocumentTemplat
            .font('Helvetica-Bold')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.black)
            .text("PARTICULARS RELATING TO HOLDER", 50, yPos);
-           
+
         yPos += 20;
 
         // Box for particulars (authentic design)
@@ -581,7 +581,7 @@ export class EnhancedCitizenshipCertificateGenerator extends BaseDocumentTemplat
            .lineWidth(1)
            .stroke();
         doc.restore();
-        
+
         yPos += 20;
 
         // Holder details (authentic layout)
@@ -596,7 +596,7 @@ export class EnhancedCitizenshipCertificateGenerator extends BaseDocumentTemplat
         this.addCitizenshipField(doc, "Particulars", data.holder.particulars || "N/A", 60, yPos);
         yPos += 25;
         this.addCitizenshipField(doc, "Reference number", data.referenceNumber, 60, yPos);
-        
+
         yPos += 60;
 
         // "By order of the Minister" (authentic positioning)
@@ -604,7 +604,7 @@ export class EnhancedCitizenshipCertificateGenerator extends BaseDocumentTemplat
            .font('Helvetica-Oblique')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.black)
            .text("By order of the Minister", 50, yPos);
-           
+
         yPos += 40;
 
         // Department signature area (authentic layout)
@@ -612,7 +612,7 @@ export class EnhancedCitizenshipCertificateGenerator extends BaseDocumentTemplat
            .font('Helvetica')
            .text("Department of Home Affairs", 50, yPos);
         doc.text("PRETORIA", 50, yPos + 15);
-        
+
         // Director signature line
         doc.text("_________________________________", 300, yPos + 20);
         doc.fontSize(9)
@@ -657,7 +657,7 @@ export class EnhancedCitizenshipCertificateGenerator extends BaseDocumentTemplat
        .font('Helvetica')
        .fillColor(AUTHENTIC_SA_DESIGN.colors.black)
        .text(`${label}:`, x, y, { width: 150 });
-       
+
     doc.fontSize(10)
        .font('Helvetica-Bold')
        .text(value || "____________________", x + 150, y);
@@ -686,7 +686,7 @@ export class EnhancedSouthAfricanPassportGenerator extends BaseDocumentTemplate 
         const chunks: Buffer[] = [];
         doc.on('data', (chunk) => chunks.push(chunk));
         doc.on('error', reject);
-        doc.on('end', () => resolve(Buffer.concat(chunks)));
+        doc.on('end', () => resolve(Buffer.concat(chunks as any)));
 
         // Authentic passport background (green theme)
         doc.save();
@@ -707,7 +707,7 @@ export class EnhancedSouthAfricanPassportGenerator extends BaseDocumentTemplate 
            .fillColor(AUTHENTIC_SA_DESIGN.colors.passport_gold)
            .text("COAT OF\nARMS", 165, yPos + 20, { width: 24, align: "center" });
         doc.restore();
-        
+
         yPos += 60;
 
         // "REPUBLIC OF SOUTH AFRICA" (authentic typography)
@@ -715,11 +715,11 @@ export class EnhancedSouthAfricanPassportGenerator extends BaseDocumentTemplate 
            .font('Helvetica-Bold')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.white)
            .text("REPUBLIC OF SOUTH AFRICA", 20, yPos, { align: "center", width: 314 });
-           
+
         yPos += 20;
         doc.fontSize(10)
            .text("REPUBLIEK VAN SUID-AFRIKA", 20, yPos, { align: "center", width: 314 });
-           
+
         yPos += 30;
 
         // "PASSPORT" title (authentic design)
@@ -727,7 +727,7 @@ export class EnhancedSouthAfricanPassportGenerator extends BaseDocumentTemplate 
            .font('Helvetica-Bold')
            .fillColor(AUTHENTIC_SA_DESIGN.colors.passport_gold)
            .text("PASSPORT", 20, yPos, { align: "center", width: 314 });
-           
+
         yPos += 20;
         doc.fontSize(14)
            .text("PASPOORT", 20, yPos, { align: "center", width: 314 });
@@ -755,7 +755,7 @@ export class EnhancedSouthAfricanPassportGenerator extends BaseDocumentTemplate 
         doc.fontSize(9)
            .font('Helvetica-Bold')
            .text("P", leftX + 60, yPos);
-        
+
         yPos += 15;
         doc.fontSize(7)
            .font('Helvetica')
@@ -763,49 +763,49 @@ export class EnhancedSouthAfricanPassportGenerator extends BaseDocumentTemplate 
         doc.fontSize(9)
            .font('Helvetica-Bold')
            .text("ZAF", leftX + 60, yPos);
-        
+
         yPos += 15;
         doc.fontSize(7)
            .text("Passport No./Paspoort Nr.", leftX, yPos);
         doc.fontSize(9)
            .font('Helvetica-Bold')
            .text(data.passportNumber, leftX + 60, yPos);
-        
+
         yPos += 15;
         doc.fontSize(7)
            .text("Surname/Van", leftX, yPos);
         doc.fontSize(9)
            .font('Helvetica-Bold')
            .text(data.personal.surname, leftX + 60, yPos);
-        
+
         yPos += 15;
         doc.fontSize(7)
            .text("Given names/Voornaam", leftX, yPos);
         doc.fontSize(9)
            .font('Helvetica-Bold')
            .text(data.personal.givenNames, leftX + 60, yPos);
-        
+
         yPos += 15;
         doc.fontSize(7)
            .text("Nationality/Nasionaliteit", leftX, yPos);
         doc.fontSize(9)
            .font('Helvetica-Bold')
            .text("SOUTH AFRICAN", leftX + 60, yPos);
-        
+
         yPos += 15;
         doc.fontSize(7)
            .text("Date of birth/Geboortedatum", leftX, yPos);
         doc.fontSize(9)
            .font('Helvetica-Bold')
            .text(this.formatSADate(data.personal.dateOfBirth), leftX + 60, yPos);
-        
+
         yPos += 15;
         doc.fontSize(7)
            .text("Sex/Geslag", leftX, yPos);
         doc.fontSize(9)
            .font('Helvetica-Bold')
            .text(data.personal.gender, leftX + 60, yPos);
-        
+
         yPos += 15;
         doc.fontSize(7)
            .text("Place of birth/Geboorplek", leftX, yPos);
@@ -820,7 +820,7 @@ export class EnhancedSouthAfricanPassportGenerator extends BaseDocumentTemplate 
         doc.fontSize(9)
            .font('Helvetica-Bold')
            .text(this.formatSADate(data.dateOfIssue), leftX + 60, yPos);
-        
+
         doc.fontSize(7)
            .text("Date of expiry/Vervaldatum", leftX + 150, yPos);
         doc.fontSize(9)

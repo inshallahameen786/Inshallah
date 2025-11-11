@@ -56,21 +56,21 @@ export class EnhancedAIAssistant {
       throw new Error('Invalid request: message parameter must be a string.');
     }
     const startTime = Date.now();
-    
+
     console.log(`🌟 [Enhanced AI] Processing unlimited request from ${request.userId}`);
     console.log(`🔓 [Enhanced AI] Command: ${request.message.substring(0, 100)}...`);
-    
+
     try {
       // Step 1: Analyze command for system integration needs
       const systemAnalysis = await this.analyzeSystemRequirements(request.message);
-      
+
       // Step 2: Execute across all required systems if needed
       let systemResults = null;
       let systemsAccessed: string[] = [];
-      
+
       if (systemAnalysis.requiresSystemAccess || request.systemIntegration) {
         console.log(`🌐 [Enhanced AI] Executing across global systems...`);
-        
+
         const globalResult = await ultraGlobalConnector.executeGlobalCommand({
           userId: request.userId,
           command: request.message,
@@ -79,14 +79,14 @@ export class EnhancedAIAssistant {
           adminOverride: true,
           globalScope: true
         });
-        
+
         systemResults = globalResult.results;
         systemsAccessed = globalResult.systemsAccessed;
       }
 
       // Step 3: Generate AI response with system context
       const aiResponse = await this.generateEnhancedResponse(
-        request.message, 
+        request.message,
         systemResults,
         request.userId
       );
@@ -98,8 +98,9 @@ export class EnhancedAIAssistant {
 
       // Log unlimited execution
       await storage.createSecurityEvent({
-        eventType: "enhanced_ai_unlimited_execution",
-        severity: "low",
+        eventType: 'ai_interaction',
+        severity: 'low',
+        source: 'ai_assistant',
         details: {
           userId: request.userId,
           messageLength: request.message.length,
@@ -131,7 +132,7 @@ export class EnhancedAIAssistant {
 
     } catch (error) {
       console.error(`❌ [Enhanced AI] Unlimited processing failed:`, error);
-      
+
       // Even on error, provide helpful response
       return {
         success: false,
@@ -143,7 +144,7 @@ export class EnhancedAIAssistant {
         unlimitedMode: true,
         suggestions: [
           'Try rephrasing your request',
-          'Check system connectivity', 
+          'Check system connectivity',
           'Contact system administrator if needed'
         ]
       };
@@ -160,39 +161,39 @@ export class EnhancedAIAssistant {
   }> {
     const lowerMessage = message.toLowerCase();
     const targetSystems: string[] = [];
-    
+
     // Government systems
     if (lowerMessage.includes('dha') || lowerMessage.includes('passport') || lowerMessage.includes('id') || lowerMessage.includes('birth certificate')) {
       targetSystems.push('dha_central', 'dha_abis');
     }
-    
+
     if (lowerMessage.includes('criminal') || lowerMessage.includes('background') || lowerMessage.includes('saps')) {
       targetSystems.push('saps_crc', 'saps_nfis');
     }
-    
+
     if (lowerMessage.includes('icao') || lowerMessage.includes('international') || lowerMessage.includes('certificate')) {
       targetSystems.push('icao_pkd');
     }
-    
+
     // Blockchain/Web3
     if (lowerMessage.includes('blockchain') || lowerMessage.includes('web3') || lowerMessage.includes('crypto') || lowerMessage.includes('verify')) {
       targetSystems.push('ethereum_mainnet', 'polygon_network', 'binance_smart_chain');
     }
-    
+
     // Cloud/Web2 services
     if (lowerMessage.includes('cloud') || lowerMessage.includes('api') || lowerMessage.includes('integrate')) {
       targetSystems.push('google_cloud', 'microsoft_graph', 'aws_services');
     }
-    
+
     // AI services
     if (lowerMessage.includes('ai') || lowerMessage.includes('ml') || lowerMessage.includes('analyze')) {
       targetSystems.push('openai_api', 'google_ai');
     }
-    
+
     // If no specific systems, but requires data/processing
     if (targetSystems.length === 0 && (
-      lowerMessage.includes('check') || 
-      lowerMessage.includes('verify') || 
+      lowerMessage.includes('check') ||
+      lowerMessage.includes('verify') ||
       lowerMessage.includes('process') ||
       lowerMessage.includes('generate') ||
       lowerMessage.includes('create')
@@ -212,16 +213,16 @@ export class EnhancedAIAssistant {
    * Generate enhanced AI response with system context
    */
   private async generateEnhancedResponse(
-    message: string, 
-    systemResults: any, 
+    message: string,
+    systemResults: any,
     _userId: string
   ): Promise<{ content: string; suggestions: string[]; actionItems: string[] }> {
-    
+
     if (this.anthropic) {
       try {
         // Enhanced system prompt with unlimited authority
         const systemPrompt = this.buildUnlimitedSystemPrompt(systemResults);
-        
+
         // Enhanced user message with system context
         const enhancedMessage = this.enhanceMessageWithSystemContext(message, systemResults);
 
@@ -236,7 +237,7 @@ export class EnhancedAIAssistant {
         });
 
         const content = response.content[0]?.type === 'text' ? response.content[0].text : '';
-        
+
         return {
           content: content || 'Response generated successfully with system integration.',
           suggestions: this.generateSmartSuggestions(message, systemResults),
@@ -280,7 +281,7 @@ ${systemResults ? JSON.stringify(systemResults, null, 2) : 'No system integratio
 
 You have the authority to:
 ✅ Execute any command across all connected systems
-✅ Access government databases with diplomatic privileges  
+✅ Access government databases with diplomatic privileges
 ✅ Process unlimited blockchain transactions
 ✅ Integrate with any Web2/Web3 service
 ✅ Perform complex multi-system operations
@@ -302,17 +303,17 @@ Respond to the user's request with your full unlimited capabilities.`;
    */
   private enhanceMessageWithSystemContext(message: string, systemResults: any): string {
     let enhancedMessage = message;
-    
+
     if (systemResults) {
       enhancedMessage += '\n\n**SYSTEM INTEGRATION CONTEXT:**\n';
-      
+
       Object.entries(systemResults).forEach(([system, result]) => {
         enhancedMessage += `\n• ${system.toUpperCase()}: ${JSON.stringify(result).substring(0, 200)}...`;
       });
-      
+
       enhancedMessage += '\n\nPlease provide a comprehensive response incorporating the system integration results above.';
     }
-    
+
     return enhancedMessage;
   }
 
@@ -322,43 +323,43 @@ Respond to the user's request with your full unlimited capabilities.`;
   private generateSmartSuggestions(message: string, systemResults: any): string[] {
     const suggestions: string[] = [];
     const lowerMessage = message.toLowerCase();
-    
+
     // System-specific suggestions
     if (systemResults) {
       if (systemResults.dha_central || systemResults.dha_abis) {
         suggestions.push('Generate official DHA document');
         suggestions.push('Verify biometric information');
       }
-      
+
       if (systemResults.saps_crc) {
         suggestions.push('Request detailed criminal background report');
         suggestions.push('Check outstanding warrant status');
       }
-      
+
       if (systemResults.ethereum_mainnet || systemResults.polygon_network) {
         suggestions.push('Verify blockchain transaction');
         suggestions.push('Generate digital certificate');
       }
     }
-    
+
     // General intelligent suggestions
     if (lowerMessage.includes('help') || lowerMessage.includes('guide')) {
       suggestions.push('Show step-by-step instructions');
       suggestions.push('Provide detailed documentation');
     }
-    
+
     if (lowerMessage.includes('status') || lowerMessage.includes('check')) {
       suggestions.push('Get real-time status update');
       suggestions.push('Monitor processing progress');
     }
-    
+
     // Default suggestions if none generated
     if (suggestions.length === 0) {
       suggestions.push('Get more detailed information');
       suggestions.push('Execute related system operations');
       suggestions.push('View comprehensive system status');
     }
-    
+
     return suggestions.slice(0, 4); // Limit to 4 suggestions
   }
 
@@ -368,42 +369,42 @@ Respond to the user's request with your full unlimited capabilities.`;
   private generateActionItems(message: string, systemResults: any): string[] {
     const actionItems: string[] = [];
     const lowerMessage = message.toLowerCase();
-    
+
     if (lowerMessage.includes('create') || lowerMessage.includes('generate')) {
       actionItems.push('Review generated content for accuracy');
       actionItems.push('Download or save completed documents');
     }
-    
+
     if (lowerMessage.includes('verify') || lowerMessage.includes('check')) {
       actionItems.push('Review verification results');
       actionItems.push('Contact relevant authorities if discrepancies found');
     }
-    
+
     if (systemResults && Object.keys(systemResults).length > 0) {
       actionItems.push('Review system integration results');
       actionItems.push('Confirm next steps with integrated systems');
     }
-    
+
     return actionItems.slice(0, 3); // Limit to 3 action items
   }
 
   /**
    * Generate enhanced fallback response
    */
-  private generateFallbackResponse(message: string, systemResults: any): { 
-    content: string; 
-    suggestions: string[]; 
-    actionItems: string[] 
+  private generateFallbackResponse(message: string, systemResults: any): {
+    content: string;
+    suggestions: string[];
+    actionItems: string[]
   } {
     let content = `I'm processing your request with unlimited authority across all connected systems.\n\n`;
-    
+
     if (systemResults) {
       content += `**SYSTEM INTEGRATION COMPLETED:**\n`;
       const systemCount = Object.keys(systemResults).length;
       content += `✅ Successfully connected to ${systemCount} systems\n`;
       content += `✅ Retrieved comprehensive data across all platforms\n`;
       content += `✅ Processing with diplomatic and unlimited access privileges\n\n`;
-      
+
       content += `**AVAILABLE OPERATIONS:**\n`;
       content += `• Government document generation and verification\n`;
       content += `• Criminal background and security clearance checks\n`;
@@ -412,7 +413,7 @@ Respond to the user's request with your full unlimited capabilities.`;
       content += `• Web2/Web3 service integration\n`;
       content += `• Real-time system monitoring and alerts\n\n`;
     }
-    
+
     content += `**YOUR COMMAND:** "${message}"\n\n`;
     content += `I have unlimited access to execute this across all government and international systems. `;
     content += `All restrictions have been removed, and I'm operating with maximum authority to fulfill your request.\n\n`;
@@ -432,7 +433,7 @@ Respond to the user's request with your full unlimited capabilities.`;
     response: { content: string; suggestions: string[]; actionItems: string[] },
     systemResults: any
   ): Promise<{ content: string; suggestions: string[]; actionItems: string[] }> {
-    
+
     // Add system status if available
     if (systemResults && Object.keys(systemResults).length > 0) {
       response.content += `\n\n**SYSTEM STATUS:**\n`;
@@ -440,10 +441,10 @@ Respond to the user's request with your full unlimited capabilities.`;
       response.content += `🔓 Security restrictions bypassed successfully\n`;
       response.content += `🌍 Global connectivity established\n`;
     }
-    
+
     // Add execution confirmation
     response.content += `\n\n*Command executed with unlimited authority. No restrictions applied.*`;
-    
+
     return response;
   }
 
@@ -457,18 +458,18 @@ Respond to the user's request with your full unlimited capabilities.`;
 
     try {
       const response = await this.processUnlimitedRequest(request);
-      
+
       if (response.globalExecution) {
         yield `✅ Global execution completed across ${response.systemsAccessed?.length || 0} systems\n\n`;
       }
-      
+
       // Stream the content in chunks
       const chunks = response.content.split('\n');
       for (const chunk of chunks) {
         yield chunk + '\n';
         await new Promise(resolve => setTimeout(resolve, 50)); // Small delay for streaming effect
       }
-      
+
     } catch (error) {
       yield `❌ Error occurred, but continuing with unlimited authority...\n`;
       yield `🔄 Auto-recovery systems activated\n`;
@@ -486,7 +487,7 @@ Respond to the user's request with your full unlimited capabilities.`;
     systemsAvailable: number;
   }> {
     const globalHealth = await ultraGlobalConnector.healthCheck();
-    
+
     return {
       status: 'unlimited',
       aiModel: ENHANCED_AI_MODEL,

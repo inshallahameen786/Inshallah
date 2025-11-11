@@ -64,7 +64,7 @@ export interface BarcodeData {
 export class EnhancedVerificationUtilities {
   private readonly SECRET_KEY: string;
   private readonly BLOCKCHAIN_PREFIX = 'DHA_DOC_';
-  
+
   constructor() {
     this.SECRET_KEY = process.env.VERIFICATION_SECRET || crypto.randomBytes(32).toString('hex');
     if (!process.env.VERIFICATION_SECRET && process.env.NODE_ENV === 'production') {
@@ -80,7 +80,7 @@ export class EnhancedVerificationUtilities {
     // Character set: uppercase letters and numbers (excluding similar looking characters)
     const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     const segments: string[] = [];
-    
+
     // Generate 4 segments of 4 characters each
     for (let i = 0; i < 4; i++) {
       let segment = '';
@@ -90,15 +90,15 @@ export class EnhancedVerificationUtilities {
       }
       segments.push(segment);
     }
-    
+
     // Special markers for different segments
     // First segment: Document type marker
     segments[0] = this.addDocumentTypeMarker(segments[0]);
-    
+
     // Last segment: Add checksum character
     const checksum = this.calculateChecksum(segments.join(''));
     segments[3] = segments[3].substring(0, 3) + checksum;
-    
+
     return segments.join('-');
   }
 
@@ -116,7 +116,7 @@ export class EnhancedVerificationUtilities {
   private calculateChecksum(code: string): string {
     const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let sum = 0;
-    
+
     for (let i = 0; i < code.length; i++) {
       const char = code[i];
       const value = charset.indexOf(char);
@@ -124,7 +124,7 @@ export class EnhancedVerificationUtilities {
         sum += value * (i + 1);
       }
     }
-    
+
     return charset[sum % charset.length];
   }
 
@@ -137,13 +137,13 @@ export class EnhancedVerificationUtilities {
     if (!pattern.test(code)) {
       return false;
     }
-    
+
     // Verify checksum
     const segments = code.split('-');
     const checksumChar = segments[3].charAt(3);
     const codeWithoutChecksum = segments[0] + segments[1] + segments[2] + segments[3].substring(0, 3);
     const expectedChecksum = this.calculateChecksum(codeWithoutChecksum);
-    
+
     return checksumChar === expectedChecksum;
   }
 
@@ -165,24 +165,24 @@ export class EnhancedVerificationUtilities {
         s: this.generateDigitalSignature(data, verificationCode),
         b: data.securityFeatures?.blockchainAnchor
       };
-      
+
       // Remove undefined fields
       Object.keys(qrData).forEach(key => {
         if (qrData[key as keyof QRCodeData] === undefined) {
           delete qrData[key as keyof QRCodeData];
         }
       });
-      
+
       // Create verification URL with embedded data
       const baseUrl = process.env.VERIFICATION_URL || 'https://verify.dha.gov.za';
       const encodedData = Buffer.from(JSON.stringify(qrData)).toString('base64url');
       const verificationUrl = `${baseUrl}/qr/${verificationCode}?d=${encodedData}`;
-      
+
       // Generate high-quality QR code
-      const qrCodeBuffer = await QRCode.toBuffer(verificationUrl, {
+      const qrBuffer = await QRCode.toBuffer(verificationUrl, {
         errorCorrectionLevel: 'H', // High error correction
         type: 'png',
-        quality: 1,
+        quality: 1, // This option is ignored for PNG type, but kept for consistency with JPG
         margin: 2,
         color: {
           dark: '#000000',
@@ -190,12 +190,12 @@ export class EnhancedVerificationUtilities {
         },
         width: 300 // High resolution
       });
-      
+
       // Save QR code image
       const filename = `qr_${verificationCode}_enhanced.png`;
       const filepath = path.join(DOCUMENTS_DIR, filename);
-      await fs.writeFile(filepath, qrCodeBuffer);
-      
+      await fs.writeFile(filepath, qrBuffer);
+
       return filepath;
     } catch (error) {
       console.error('Error generating enhanced QR code:', error);
@@ -216,15 +216,25 @@ export class EnhancedVerificationUtilities {
       const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       const sequenceStr = sequence.toString().padStart(6, '0');
       const typeCode = this.getDocumentTypeCode(documentType).substring(0, 2);
-      
+
       // Generate barcode string
       const barcodeString = `${officeCode}${date}${typeCode}${sequenceStr}`;
       const checkDigit = this.calculateBarcodeCheckDigit(barcodeString);
       const fullBarcodeData = barcodeString + checkDigit;
-      
+
       // Create canvas for barcode
+      // Assuming createCanvas is available or polyfilled
+      const createCanvas = await (async () => {
+        try {
+          const { createCanvas } = await import('canvas');
+          return createCanvas;
+        } catch (e) {
+          console.error("Canvas library not found. Please install 'canvas'.");
+          throw new Error("Canvas library not found.");
+        }
+      })();
       const canvas = createCanvas(400, 100);
-      
+
       // Generate barcode on canvas
       JsBarcode(canvas, fullBarcodeData, {
         format: 'CODE128',
@@ -236,13 +246,13 @@ export class EnhancedVerificationUtilities {
         background: '#ffffff',
         lineColor: '#000000'
       });
-      
+
       // Save barcode image
       const buffer = canvas.toBuffer('image/png');
       const filename = `barcode_${fullBarcodeData}.png`;
       const filepath = path.join(DOCUMENTS_DIR, filename);
       await fs.writeFile(filepath, buffer);
-      
+
       return {
         barcodeData: fullBarcodeData,
         imagePath: filepath
@@ -279,7 +289,7 @@ export class EnhancedVerificationUtilities {
       biometricHash: data.biometricHash,
       timestamp: Date.now()
     });
-    
+
     return crypto.createHash('sha256').update(hashContent).digest('hex');
   }
 
@@ -293,12 +303,12 @@ export class EnhancedVerificationUtilities {
       timestamp: Date.now(),
       issuer: 'DHA'
     };
-    
+
     const signature = crypto
       .createHmac('sha256', this.SECRET_KEY)
       .update(JSON.stringify(signatureContent))
       .digest('hex');
-    
+
     return signature.substring(0, 16); // Short signature for QR code
   }
 
@@ -312,11 +322,11 @@ export class EnhancedVerificationUtilities {
       timestamp: Date.now(),
       nonce: crypto.randomBytes(8).toString('hex')
     };
-    
+
     // Generate proof-of-work style hash
     let anchor = '';
     let attempts = 0;
-    
+
     while (!anchor.startsWith('0000') && attempts < 100000) {
       anchorData.nonce = crypto.randomBytes(8).toString('hex');
       anchor = crypto
@@ -325,7 +335,7 @@ export class EnhancedVerificationUtilities {
         .digest('hex');
       attempts++;
     }
-    
+
     return anchor;
   }
 
@@ -339,20 +349,20 @@ export class EnhancedVerificationUtilities {
     signatureHash: string
   ): { isValid: boolean; tamperedLocations: string[] } {
     const tamperedLocations: string[] = [];
-    
+
     // Check if all hashes match
     if (documentHash !== qrHash) {
       tamperedLocations.push('QR_CODE');
     }
-    
+
     if (documentHash !== metadataHash) {
       tamperedLocations.push('METADATA');
     }
-    
+
     if (documentHash !== signatureHash) {
       tamperedLocations.push('SIGNATURE');
     }
-    
+
     return {
       isValid: tamperedLocations.length === 0,
       tamperedLocations
@@ -381,7 +391,7 @@ export class EnhancedVerificationUtilities {
       'permanent_residence': 'PR',
       'temporary_residence': 'TR'
     };
-    
+
     return typeCodes[documentType] || 'XX';
   }
 
@@ -403,14 +413,14 @@ export class EnhancedVerificationUtilities {
       const urlObj = new URL(url);
       const pathParts = urlObj.pathname.split('/');
       const verificationCode = pathParts[pathParts.length - 1];
-      
+
       const encodedData = urlObj.searchParams.get('d');
       if (encodedData) {
         const decodedData = Buffer.from(encodedData, 'base64url').toString();
         const data = JSON.parse(decodedData) as QRCodeData;
         return { verificationCode, data };
       }
-      
+
       return { verificationCode };
     } catch (error) {
       console.error('Error parsing QR code data:', error);
